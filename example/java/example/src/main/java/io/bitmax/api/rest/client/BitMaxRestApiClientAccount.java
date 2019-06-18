@@ -2,12 +2,12 @@ package io.bitmax.api.rest.client;
 
 import io.bitmax.api.Authorization;
 import io.bitmax.api.Mapper;
+import io.bitmax.api.rest.messages.requests.CancelOrderRequest;
+import io.bitmax.api.rest.messages.responses.CancelOrderResponse;
 import io.bitmax.api.rest.messages.responses.OpenOrdersList;
 import io.bitmax.api.rest.messages.responses.OrderDetails;
 import io.bitmax.api.rest.messages.responses.UserInfo;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
+import okhttp3.*;
 
 import java.util.Map;
 
@@ -79,6 +79,32 @@ public class BitMaxRestApiClientAccount extends BitMaxRestApiClient {
             Response response = client.newCall(builder.build()).execute();
 
             return Mapper.asObject(response.body().string(), OrderDetails.class);
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException(e);
+        }
+    }
+
+    public CancelOrderResponse cancelOrder(CancelOrderRequest order) {
+        Map<String, String> headers = authClient.getHeaderMap(PATH_ORDER, System.currentTimeMillis());
+
+        RequestBody body = RequestBody.create(
+                MediaType.parse("application/json; charset=utf-8"),
+                Mapper.asString(order)
+        );
+
+        Request.Builder builder = new Request.Builder()
+                .url(URL + accountGroup + '/' + API + PATH_ORDER)
+                .delete(body);
+
+        for (Map.Entry<String, String> entry : headers.entrySet()) {
+            builder.header(entry.getKey(), entry.getValue());
+        }
+
+        try {
+            Response response = client.newCall(builder.build()).execute();
+
+            return Mapper.asObject(response.body().string(), CancelOrderResponse.class);
         } catch (Exception e) {
             e.printStackTrace();
             throw new RuntimeException(e);
